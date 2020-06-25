@@ -6,6 +6,12 @@ interface Balance {
   total: number;
 }
 
+interface CreateTransactionDAO {
+  title: string;
+  value: number;
+  type: 'income' | 'outcome';
+}
+
 class TransactionsRepository {
   private transactions: Transaction[];
 
@@ -14,15 +20,39 @@ class TransactionsRepository {
   }
 
   public all(): Transaction[] {
-    // TODO
+    return this.transactions;
   }
 
   public getBalance(): Balance {
-    // TODO
+    const reducer = (accumulator: number, currentValue: number): number => {
+      return accumulator + currentValue;
+    };
+
+    const incomes = this.transactions.filter(t => t.type === 'income');
+    const outcomes = this.transactions.filter(t => t.type === 'outcome');
+
+    let sumIncomes = 0;
+    let sumOutcomes = 0;
+
+    if (incomes.length > 0) {
+      sumIncomes = incomes.map(t => t.value).reduce(reducer);
+    }
+
+    if (outcomes.length > 0) {
+      sumOutcomes = outcomes.map(t => t.value).reduce(reducer);
+    }
+
+    const total = sumIncomes - sumOutcomes;
+
+    return { income: sumIncomes, outcome: sumOutcomes, total };
   }
 
-  public create(): Transaction {
-    // TODO
+  public create({ title, value, type }: CreateTransactionDAO): Transaction {
+    const transaction = new Transaction({ title, value, type });
+
+    this.transactions.push(transaction);
+
+    return transaction;
   }
 }
 
